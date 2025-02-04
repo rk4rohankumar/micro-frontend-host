@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset styles for microfrontend container */
+#animal-root, #book-root {
+  all: initial; /* Critical style isolation */
+  
+  /* Re-inherit fonts */
+  font-family: inherit;
+  line-height: inherit;
+  color: inherit;
+}
