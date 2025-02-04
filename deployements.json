@@ -1,0 +1,12 @@
+{
+    "host":"https://micro-frontend-host-khaki.vercel.app/",
+    "AnimalApp":"https://animal-child-app.vercel.app/",
+    "ArtWorkApp":"https://artwork-child-app.vercel.app/",
+    "BooksApp":"https://books-child-app.vercel.app/",
+    "CuisinesApp":"https://cuisines-child-app.vercel.app/",
+    "MoviesApp":"https://movies-child-app.vercel.app/",
+    "NewsApp":"https://news-child-app.vercel.app/",
+    "PhotosApp":"https://photos-child-app.vercel.app/",
+    "PokemonApp":"https://pokemon-child-app.vercel.app/",
+    "QuotesApp":"https://qoutes-child-app.vercel.app/'"
+}
