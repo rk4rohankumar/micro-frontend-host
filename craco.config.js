@@ -10,21 +10,21 @@ module.exports = {
   },
   webpack: {
     configure: (webpackConfig) => {
-      webpackConfig.output.publicPath = 'http://localhost:3000/';
+      webpackConfig.output.publicPath = 'https://micro-frontend-host-khaki.vercel.app/';
       
       webpackConfig.plugins.push(
         new ModuleFederationPlugin({
           name: 'ParentApp',
           remotes: {
-            AnimalApp: 'AnimalApp@http://localhost:3001/remoteEntry.js',
-            ArtworkApp: 'ArtworkApp@http://localhost:3002/remoteEntry.js',
-            BooksApp: 'BooksApp@http://localhost:3003/remoteEntry.js',
-            CuisinesApp: 'CuisinesApp@http://localhost:3004/remoteEntry.js',
-            MoviesApp: 'MoviesApp@http://localhost:3005/remoteEntry.js',
-            NewsApp: 'NewsApp@http://localhost:3006/remoteEntry.js',
-            PhotosApp: 'PhotosApp@http://localhost:3007/remoteEntry.js',
-            PokemonApp: 'PokemonApp@http://localhost:3008/remoteEntry.js',
-            QuotesApp: 'QuotesApp@http://localhost:3009/remoteEntry.js',
+            AnimalApp: 'AnimalApp@https://animal-child-app.vercel.app/remoteEntry.js',
+            ArtworkApp: 'ArtworkApp@https://artwork-child-app.vercel.app/remoteEntry.js',
+            BooksApp: 'BooksApp@https://books-child-app.vercel.app/remoteEntry.js',
+            CuisinesApp: 'CuisinesApp@https://cuisines-child-app.vercel.app/remoteEntry.js',
+            MoviesApp: 'MoviesApp@https://movies-child-app.vercel.app/remoteEntry.js',
+            NewsApp: 'NewsApp@https://news-child-app.vercel.app/remoteEntry.js',
+            PhotosApp: 'PhotosApp@https://photos-child-app.vercel.app/remoteEntry.js',
+            PokemonApp: 'PokemonApp@https://pokemon-child-app.vercel.app/remoteEntry.js',
+            QuotesApp: 'QuotesApp@https://qoutes-child-app.vercel.app/remoteEntry.js',
           },
           shared: {
             react: { eager: true },
