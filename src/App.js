@@ -1,72 +1,92 @@
-import React from "react";
+import React, { Suspense, useState } from 'react';
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import { ConfigProvider, Tabs } from 'antd';
+import remotes from './remotes.json';
+import { lazyRemote } from './lib/remoteComponents';
+import { RemoteBoundary } from './components/RemoteBoundary';
+import { RemoteStatusStrip } from './components/RemoteStatusStrip';
+import { RemoteFailed, RemoteLoading, NotFound } from './components/RemoteStates';
 
-import {Tabs} from  'antd'
-const { TabPane } = Tabs;
+// antd's default #1677ff on white is 4.1:1; blue-700 clears AA for tab labels.
+const THEME = { token: { colorPrimary: '#1d4ed8' } };
+const HOST_REPO = 'https://github.com/rk4rohankumar/micro-frontend-host';
+const PORTFOLIO = 'https://saturofolio.vercel.app/projects/micro-frontend-platform';
 
-const AnimalApp = React.lazy(() => import("AnimalApp/AnimalApp"));
-const ArtWorkApp = React.lazy(() => import("ArtworkApp/ArtworkApp"));
-const BooksApp = React.lazy(() => import("BooksApp/BooksApp"));
-const CuisinesApp = React.lazy(() => import("CuisinesApp/CuisinesApp"));
-const MoviesApp = React.lazy(() => import("MoviesApp/MoviesApp"));
-const NewsApp = React.lazy(() => import("NewsApp/NewsApp"));
-const PhotosApp = React.lazy(() => import("PhotosApp/PhotosApp"));
-const PokemonApp = React.lazy(() => import("PokemonApp/PokemonApp"));
-const QuotesApp = React.lazy(() => import("QuotesApp/QuotesApp"));
-
-function App() {
+function Shell() {
+  const navigate = useNavigate();
+  const { key } = useParams();
   return (
-    <div className="max-w-6xl mx-auto p-4"> 
+    <div className="mx-auto max-w-6xl px-4 pb-16">
+      <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 py-6">
+        <div className="max-w-2xl">
+          <h1 className="text-xl font-semibold tracking-tight text-gray-900">Micro Frontend Platform</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            One shell, nine React apps built and deployed on their own, loaded at runtime with
+            Webpack Module Federation. Only the app you open is fetched.
+          </p>
+        </div>
+        <nav aria-label="Project links" className="flex gap-4 text-sm">
+          <a className="text-blue-700 hover:underline" href={HOST_REPO} target="_blank" rel="noopener noreferrer">
+            Source
+          </a>
+          <a className="text-blue-700 hover:underline" href={PORTFOLIO} target="_blank" rel="noopener noreferrer">
+            Case study
+          </a>
+        </nav>
+      </header>
 
-      <Tabs defaultActiveKey="1" >
-      <TabPane tab="Animal" key="1" c>
-        <React.Suspense fallback="Loading Animal App...">
-          <AnimalApp />
-        </React.Suspense>
-      </TabPane>
-      <TabPane tab="Books" key="2">
-        <React.Suspense fallback="Loading Books App...">
-          <BooksApp />
-        </React.Suspense>
-      </TabPane>
-      <TabPane tab="Artwork" key="3">
-        <React.Suspense fallback="Loading Artwork App...">
-          <ArtWorkApp />
-        </React.Suspense>
-      </TabPane>
-      <TabPane tab="Cuisines" key="4">
-        <React.Suspense fallback="Loading Cuisines App...">
-          <CuisinesApp />
-        </React.Suspense>
-      </TabPane>
-      <TabPane tab="Movies" key="5">
-        <React.Suspense fallback="Loading Movies App...">
-          <MoviesApp />
-        </React.Suspense>
-      </TabPane>
-      <TabPane tab="News" key="6">
-        <React.Suspense fallback="Loading News App...">
-          <NewsApp />
-        </React.Suspense>
-      </TabPane>
-      <TabPane tab="Photos" key="7">
-        <React.Suspense fallback="Loading Photos App...">
-          <PhotosApp />
-        </React.Suspense>
-      </TabPane>
-      <TabPane tab="Pokemon" key="8">
-        <React.Suspense fallback="Loading Pokemon App...">
-          <PokemonApp />
-        </React.Suspense>
-      </TabPane>
-      <TabPane tab="Quotes" key="9">
-        <React.Suspense fallback="Loading Quotes App...">
-          <QuotesApp />
-        </React.Suspense>
-      </TabPane>
-    </Tabs>
+      <RemoteStatusStrip activeKey={key} />
+
+      <Tabs
+        activeKey={key}
+        // flushSync opts out of the router's transition so the loading
+        // skeleton shows at once instead of the previous app lingering.
+        onChange={(k) => navigate(`/${k}`, { flushSync: true })}
+        items={remotes.map((r) => ({ key: r.key, label: r.label }))}
+      />
+
+      <main id="remote-outlet">
+        <Outlet />
+      </main>
     </div>
-    
   );
 }
 
-export default App;
+function RemoteRoute() {
+  const { key } = useParams();
+  const remote = remotes.find((r) => r.key === key);
+  // A rejected React.lazy stays rejected; Retry bumps the generation and
+  // lazyRemote hands back a fresh, cached component for it.
+  const [attempt, setAttempt] = useState(0);
+
+  if (!remote) return <NotFound />;
+  const Remote = lazyRemote(remote.key, attempt);
+
+  return (
+    <RemoteBoundary
+      resetKey={`${remote.key}:${attempt}`}
+      fallback={(error) => (
+        <RemoteFailed remote={remote} error={error} onRetry={() => setAttempt((a) => a + 1)} />
+      )}
+    >
+      <Suspense fallback={<RemoteLoading remote={remote} />}>
+        <Remote />
+      </Suspense>
+    </RemoteBoundary>
+  );
+}
+
+export default function App() {
+  return (
+    <ConfigProvider theme={THEME}>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Shell />}>
+            <Route index element={<Navigate to={`/${remotes[0].key}`} replace />} />
+            <Route path=":key" element={<RemoteRoute />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ConfigProvider>
+  );
+}
