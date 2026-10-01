@@ -1,0 +1,11 @@
+[
+  { "key": "animals", "scope": "AnimalApp", "module": "./AnimalApp", "label": "Animals", "url": "https://animal-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/animal-child-app" },
+  { "key": "books", "scope": "BooksApp", "module": "./BooksApp", "label": "Books", "url": "https://books-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/books-child-app" },
+  { "key": "artwork", "scope": "ArtworkApp", "module": "./ArtworkApp", "label": "Artwork", "url": "https://artwork-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/artwork-child-app" },
+  { "key": "cuisines", "scope": "CuisinesApp", "module": "./CuisinesApp", "label": "Cuisines", "url": "https://cuisines-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/cuisines-child-app" },
+  { "key": "movies", "scope": "MoviesApp", "module": "./MoviesApp", "label": "Movies", "url": "https://movies-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/movies-child-app" },
+  { "key": "news", "scope": "NewsApp", "module": "./NewsApp", "label": "News", "url": "https://news-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/news-child-app" },
+  { "key": "photos", "scope": "PhotosApp", "module": "./PhotosApp", "label": "Photos", "url": "https://photos-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/photos-child-app" },
+  { "key": "pokemon", "scope": "PokemonApp", "module": "./PokemonApp", "label": "Pokemon", "url": "https://pokemon-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/pokemon-child-app" },
+  { "key": "quotes", "scope": "QuotesApp", "module": "./QuotesApp", "label": "Quotes", "url": "https://qoutes-child-app.vercel.app", "repo": "https://github.com/rk4rohankumar/qoutes-child-app" }
+]

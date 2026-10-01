@@ -1,37 +1,33 @@
-// parent-app/craco.config.js
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
-const tailwindcss = require('tailwindcss');
-const autoprefixer = require('autoprefixer');
+const { dependencies } = require('./package.json');
+
+// Tailwind: react-scripts 5 wires the tailwindcss PostCSS plugin itself when
+// tailwind.config.js exists. The old `style.postcss.plugins` override here used
+// the CRACO 6 API, which CRACO 7 ignores — and it left the @tailwind directives
+// unprocessed in the shipped CSS.
 module.exports = {
-  style: {
-    postcss: {
-      plugins: [tailwindcss, autoprefixer],
-    },
-  },
   webpack: {
     configure: (webpackConfig) => {
-      webpackConfig.output.publicPath = 'https://micro-frontend-host-khaki.vercel.app/';
-      
+      // 'auto' derives chunk URLs from the running bundle's own URL, so the
+      // same build serves Vercel and a local preview. Dev keeps CRA's '/'.
+      if (process.env.NODE_ENV === 'production') {
+        webpackConfig.output.publicPath = 'auto';
+      }
+
       webpackConfig.plugins.push(
         new ModuleFederationPlugin({
           name: 'ParentApp',
-          remotes: {
-            AnimalApp: 'AnimalApp@https://animal-child-app.vercel.app/remoteEntry.js',
-            ArtworkApp: 'ArtworkApp@https://artwork-child-app.vercel.app/remoteEntry.js',
-            BooksApp: 'BooksApp@https://books-child-app.vercel.app/remoteEntry.js',
-            CuisinesApp: 'CuisinesApp@https://cuisines-child-app.vercel.app/remoteEntry.js',
-            MoviesApp: 'MoviesApp@https://movies-child-app.vercel.app/remoteEntry.js',
-            NewsApp: 'NewsApp@https://news-child-app.vercel.app/remoteEntry.js',
-            PhotosApp: 'PhotosApp@https://photos-child-app.vercel.app/remoteEntry.js',
-            PokemonApp: 'PokemonApp@https://pokemon-child-app.vercel.app/remoteEntry.js',
-            QuotesApp: 'QuotesApp@https://qoutes-child-app.vercel.app/remoteEntry.js',
-          },
+          // No static `remotes`: containers are loaded at runtime from
+          // src/remotes.json (see src/lib/remoteLoaders.js). Declaring them
+          // here makes webpack fetch every remoteEntry during share-scope init.
+          // React must be a singleton across host + remotes — two copies break
+          // hooks. Eager on the host because the shell renders before any
+          // remote is negotiated.
           shared: {
-            react: { eager: true },
-            'react-dom': { eager: true },
-            'tailwindcss': { eager: true }
+            react: { singleton: true, eager: true, requiredVersion: dependencies.react },
+            'react-dom': { singleton: true, eager: true, requiredVersion: dependencies['react-dom'] },
           },
-        })
+        }),
       );
       return webpackConfig;
     },

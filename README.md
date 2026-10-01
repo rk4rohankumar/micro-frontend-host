@@ -1,135 +1,55 @@
-# Microfrontend Parent Application
+# Micro Frontend Platform — host shell
 
-A container application that orchestrates multiple microfrontends using Webpack Module Federation.
+A container that loads **nine independently built and deployed React apps at runtime** with Webpack Module Federation. Each child lives in its own repo and its own Vercel project; the host only knows their `remoteEntry.js` URLs.
 
-## 🚀 Features
-- Integrates 9 independent microfrontends
-- Dynamic loading of child applications
-- Shared dependency management (React, Tailwind CSS)
-- Production-ready configuration
-- Styled with Tailwind CSS and Ant Design
+Live: https://micro-frontend-host-khaki.vercel.app
 
-## 📦 Integrated Child Applications
-1. **Animal App** - `AnimalApp@[URL]`
-2. **Artwork App** - `ArtworkApp@[URL]`
-3. **Books App** - `BooksApp@[URL]`
-4. **Cuisines App** - `CuisinesApp@[URL]`
-5. **Movies App** - `MoviesApp@[URL]`
-6. **News App** - `NewsApp@[URL]`
-7. **Photos App** - `PhotosApp@[URL]`
-8. **Pokemon App** - `PokemonApp@[URL]`
-9. **Quotes App** - `QuotesApp@[URL]`
+## What the shell does
 
-## 🛠️ Technology Stack
-- React 19
-- Webpack Module Federation
-- Tailwind CSS 3
-- Ant Design
-- CRACO (Create React App Configuration Override)
+- **One route per remote** (`/animals`, `/books`, …). Deep links and reloads land on the right app; the browser back button works.
+- **Loads on demand, at runtime.** Remotes are not declared to webpack. The shell injects a remote's `remoteEntry.js` when you first route to it, hands it the host's share scope and asks the container for the exposed module. Opening the shell no longer downloads nine bundles, and re-pointing a remote is a JSON edit.
+- **Fails in isolation.** Each remote renders inside an error boundary. A dead or slow deployment shows a retry card; the other eight keep working.
+- **Shows its own plumbing.** The status strip reports every remote's host, lifecycle (idle → loading → ready/failed) and load time, measured around the federated import.
+- **Shares React as a singleton** so host and remotes run one copy (two copies break hooks).
 
-## ⚙️ Installation
-1. Clone the repository
-2. Install dependencies:
+## Layout
+
+```
+src/remotes.json            runtime manifest: key, scope, exposed module, label, deploy URL, repo
+src/lib/remoteLoaders.js    runtime container loading (script inject → init share scope → get)
+src/lib/remoteRegistry.js   lifecycle + timing store behind the status strip
+src/components/             RemoteBoundary, RemoteStatusStrip, loading / failed / 404 states
+src/App.js                  router + shell
+craco.config.js             ModuleFederationPlugin: shared React singleton only, no static remotes
+vercel.json                 SPA rewrite so /books resolves on a static host
+```
+
+## Remotes
+
+| Route | Scope | Repo |
+| --- | --- | --- |
+| /animals | AnimalApp | [animal-child-app](https://github.com/rk4rohankumar/animal-child-app) |
+| /books | BooksApp | [books-child-app](https://github.com/rk4rohankumar/books-child-app) |
+| /artwork | ArtworkApp | [artwork-child-app](https://github.com/rk4rohankumar/artwork-child-app) |
+| /cuisines | CuisinesApp | [cuisines-child-app](https://github.com/rk4rohankumar/cuisines-child-app) |
+| /movies | MoviesApp | [movies-child-app](https://github.com/rk4rohankumar/movies-child-app) |
+| /news | NewsApp | [news-child-app](https://github.com/rk4rohankumar/news-child-app) |
+| /photos | PhotosApp | [photos-child-app](https://github.com/rk4rohankumar/photos-child-app) |
+| /pokemon | PokemonApp | [pokemon-child-app](https://github.com/rk4rohankumar/pokemon-child-app) |
+| /quotes | QuotesApp | [qoutes-child-app](https://github.com/rk4rohankumar/qoutes-child-app) |
+
+Each child exposes `./<Scope>` from `src/App` via its own `ModuleFederationPlugin` and serves `remoteEntry.js` from its deployment root.
+
+## Run
+
 ```bash
 npm install
+npm start        # http://localhost:3000, loads the live remotes
+npm run build    # production bundle in build/
 ```
 
-3. Ensure all child applications are deployed and accessible at their respective URLs
+To point a route at a local child, change its `url` in `src/remotes.json` (e.g. `http://localhost:3001`). No webpack config changes needed.
 
-## 🔧 Configuration
-The core configuration is in `craco.config.js`:
-```javascript
-module.exports = {
-  // PostCSS configuration for Tailwind
-  style: {
-    postcss: {
-      plugins: [tailwindcss, autoprefixer],
-    },
-  },
-  
-  // Webpack Module Federation setup
-  webpack: {
-    configure: (webpackConfig) => {
-      webpackConfig.output.publicPath = 'https://micro-frontend-host-khaki.vercel.app/';
-      
-      webpackConfig.plugins.push(
-        new ModuleFederationPlugin({
-          name: 'ParentApp',
-          remotes: {
-            // List of all remote applications
-            AnimalApp: 'AnimalApp@[URL]',
-            // ... other remotes
-          },
-          shared: {
-            react: { eager: true },
-            'react-dom': { eager: true },
-            'tailwindcss': { eager: true }
-          },
-        })
-      );
-      return webpackConfig;
-    },
-  },
-};
-```
+## Stack
 
-## 🏃 Running the Application
-```bash
-npm start
-```
-
-## 🏗️ Production Build
-```bash
-npm run build
-```
-
-## 🌐 Deployment
-The application is configured for deployment to Vercel:
-1. Set environment variables:
-```bash
-VERCEL_URL=https://micro-frontend-host-khaki.vercel.app/
-```
-
-2. Ensure all child applications are deployed before parent app
-
-## 🎨 Styling
-- Uses Tailwind CSS for core styling
-- Ant Design components for UI elements
-- Shared Tailwind configuration across microfrontends
-- CSS isolation through container scoping
-
-## 🔄 Dependency Management
-Shared across all microfrontends:
-- React 19
-- React DOM 19
-- Tailwind CSS 3.4
-
-## 🚨 Troubleshooting
-Common issues and solutions:
-
-1. **Failed to load remote entry**
-   - Verify child applications are running
-   - Check CORS headers on child applications
-   - Ensure correct URLs in `craco.config.js`
-
-2. **Style conflicts**
-   - Verify Tailwind prefix configurations
-   - Check container scoping in child apps
-
-3. **Build errors**
-   - Ensure consistent dependency versions
-   - Clear node_modules and rebuild
-
-## 📄 License
-MIT License
-```
-
-Key elements included:
-1. Clear project structure overview
-2. Configuration details specific to your setup
-3. Deployment instructions for Vercel
-4. Troubleshooting common microfrontend issues
-5. Dependency management information
-6. Styling approach documentation
-
-Would you like me to add any specific sections or modify any existing content?
+React 19 · react-router 7 · Webpack 5 Module Federation · CRACO · Tailwind CSS 3 · Ant Design 5

@@ -1,5 +1,5 @@
 {
-  "name": "parent-app",
+  "name": "micro-frontend-host",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -40,5 +40,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "description": "Module Federation host shell loading nine independently deployed React apps"
 }
