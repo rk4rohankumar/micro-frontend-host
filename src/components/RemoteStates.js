@@ -4,7 +4,7 @@ import { Button, Result, Skeleton } from 'antd';
 export function RemoteLoading({ remote }) {
   return (
     <div role="status" className="py-6">
-      <p className="mb-4 text-sm text-gray-600">
+      <p className="mb-4 text-sm text-slate-400">
         Loading {remote.label} from {new URL(remote.url).host}…
       </p>
       <Skeleton active paragraph={{ rows: 6 }} />
