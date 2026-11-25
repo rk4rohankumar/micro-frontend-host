@@ -1,8 +1,9 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useSyncExternalStore } from 'react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { ConfigProvider, Tabs, theme } from 'antd';
 import remotes from './remotes.json';
 import { lazyRemote } from './lib/remoteComponents';
+import { registry } from './lib/remoteRegistry';
 import { RemoteBoundary } from './components/RemoteBoundary';
 import { RemoteStatusStrip, RemoteViewport } from './components/RemoteStatusStrip';
 import { RemoteFailed, RemoteLoading, NotFound } from './components/RemoteStates';
@@ -43,7 +44,15 @@ function Shell() {
         // flushSync opts out of the router's transition so the loading
         // skeleton shows at once instead of the previous app lingering.
         onChange={(k) => navigate(`/${k}`, { flushSync: true })}
-        items={remotes.map((r) => ({ key: r.key, label: r.label }))}
+        // Hovering or focusing a tab starts fetching that remote, so the click is instant.
+        items={remotes.map((r) => ({
+          key: r.key,
+          label: (
+            <span onMouseEnter={() => registry.prefetch(r.key)} onFocus={() => registry.prefetch(r.key)}>
+              {r.label}
+            </span>
+          ),
+        }))}
       />
 
       <RemoteViewport remoteKey={key}>
@@ -59,13 +68,15 @@ function RemoteRoute() {
   // A rejected React.lazy stays rejected; Retry bumps the generation and
   // lazyRemote hands back a fresh, cached component for it.
   const [attempt, setAttempt] = useState(0);
+  // Toggling the simulated outage remounts the remote with a fresh component.
+  const epoch = useSyncExternalStore(registry.subscribe, () => (remote ? registry.getSnapshot()[remote.key].epoch : 0));
 
   if (!remote) return <NotFound />;
-  const Remote = lazyRemote(remote.key, attempt);
+  const Remote = lazyRemote(remote.key, `${attempt}:${epoch}`);
 
   return (
     <RemoteBoundary
-      resetKey={`${remote.key}:${attempt}`}
+      resetKey={`${remote.key}:${attempt}:${epoch}`}
       fallback={(error) => (
         <RemoteFailed remote={remote} error={error} onRetry={() => setAttempt((a) => a + 1)} />
       )}
