@@ -96,6 +96,21 @@ function EventBus() {
   );
 }
 
+// The shared design system: tokens the host serves to every remote at runtime.
+// Remotes read them with fallbacks, so they still look right when run standalone.
+const TOKENS = {
+  colorScheme: 'light',
+  '--mfe-surface': '#ffffff',
+  '--mfe-sunken': '#f8fafc',
+  '--mfe-ink': '#0f172a',
+  '--mfe-muted': '#475569',
+  '--mfe-border': '#e2e8f0',
+  '--mfe-accent': '#047857',
+  '--mfe-accent-soft': '#ecfdf5',
+  '--mfe-accent-ink': '#065f46',
+  '--mfe-radius': '12px',
+};
+
 // The open remote, framed with which container is mounted and where it came from.
 export function RemoteViewport({ remoteKey, children }) {
   const snap = useRegistry();
@@ -117,7 +132,7 @@ export function RemoteViewport({ remoteKey, children }) {
       )}
       {/* Remotes ship their own light styling, so the mount point and its fallbacks stay light. */}
       <ConfigProvider theme={{ algorithm: theme.defaultAlgorithm, token: { colorPrimary: '#047857', colorBgBase: '#ffffff', colorTextBase: '#0f172a' } }}>
-        <div className="bg-white p-2 text-gray-900 sm:p-4" style={{ colorScheme: 'light' }}>{children}</div>
+        <div className="bg-white p-2 text-gray-900 sm:p-4" style={TOKENS}>{children}</div>
       </ConfigProvider>
     </main>
   );
