@@ -1,14 +1,14 @@
 import React, { Suspense, useState } from 'react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate, useParams } from 'react-router-dom';
-import { ConfigProvider, Tabs } from 'antd';
+import { ConfigProvider, Tabs, theme } from 'antd';
 import remotes from './remotes.json';
 import { lazyRemote } from './lib/remoteComponents';
 import { RemoteBoundary } from './components/RemoteBoundary';
-import { RemoteStatusStrip } from './components/RemoteStatusStrip';
+import { RemoteStatusStrip, RemoteViewport } from './components/RemoteStatusStrip';
 import { RemoteFailed, RemoteLoading, NotFound } from './components/RemoteStates';
 
-// antd's default #1677ff on white is 4.1:1; blue-700 clears AA for tab labels.
-const THEME = { token: { colorPrimary: '#1d4ed8' } };
+// A dark runtime console; emerald marks loaded remotes and the active tab.
+const THEME = { algorithm: theme.darkAlgorithm, token: { colorPrimary: '#34d399', colorBgBase: '#020617' } };
 const HOST_REPO = 'https://github.com/rk4rohankumar/micro-frontend-host';
 const PORTFOLIO = 'https://saturofolio.vercel.app/projects/micro-frontend-platform';
 
@@ -19,17 +19,18 @@ function Shell() {
     <div className="mx-auto max-w-6xl px-4 pb-16">
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 py-6">
         <div className="max-w-2xl">
-          <h1 className="text-xl font-semibold tracking-tight text-gray-900">Micro Frontend Platform</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="text-xs font-medium uppercase tracking-widest text-emerald-400">Module Federation · runtime console</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">Micro Frontend Platform</h1>
+          <p className="mt-1 text-sm text-slate-400">
             One shell, nine React apps built and deployed on their own, loaded at runtime with
             Webpack Module Federation. Only the app you open is fetched.
           </p>
         </div>
         <nav aria-label="Project links" className="flex gap-4 text-sm">
-          <a className="text-blue-700 hover:underline" href={HOST_REPO} target="_blank" rel="noopener noreferrer">
+          <a className="text-sky-300 hover:underline" href={HOST_REPO} target="_blank" rel="noopener noreferrer">
             Source
           </a>
-          <a className="text-blue-700 hover:underline" href={PORTFOLIO} target="_blank" rel="noopener noreferrer">
+          <a className="text-sky-300 hover:underline" href={PORTFOLIO} target="_blank" rel="noopener noreferrer">
             Case study
           </a>
         </nav>
@@ -45,9 +46,9 @@ function Shell() {
         items={remotes.map((r) => ({ key: r.key, label: r.label }))}
       />
 
-      <main id="remote-outlet">
+      <RemoteViewport remoteKey={key}>
         <Outlet />
-      </main>
+      </RemoteViewport>
     </div>
   );
 }

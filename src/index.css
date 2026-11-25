@@ -11,3 +11,7 @@
   line-height: inherit;
   color: inherit;
 }
+body {
+  background: #020617;
+  color-scheme: dark;
+}
